@@ -1,19 +1,36 @@
 window.gameLogic = function() {
     return {
         selections: [
-            { planet: null, vehicle: null },
-            { planet: null, vehicle: null },
-            { planet: null, vehicle: null },
-            { planet: null, vehicle: null }
+            { planet: null, vehicle: null, travelTime: null },
+            { planet: null, vehicle: null, travelTime: null },
+            { planet: null, vehicle: null, travelTime: null },
+            { planet: null, vehicle: null, travelTime: null }
         ],
         allPlanets: [],
         allVehicles: [],
         
         init() {
-            // Deep clone the initial vehicles to maintain original counts
             this.allPlanets = window.gameData.planets || [];
             this.allVehicles = JSON.parse(JSON.stringify(window.gameData.vehicles || []));
+            
+            
+            window.addEventListener('reset-game', () => {
+                console.log('Reset game triggered in game component');
+                this.resetGame();
+            });
         },
+
+        resetGame() {
+
+            console.log('Resetting game state');
+        
+            this.selections = this.selections.map(() => ({ planet: null, vehicle: null, travelTime: null }));
+        
+            this.allVehicles = JSON.parse(JSON.stringify(window.gameData.vehicles || []));
+        
+            window.dispatchEvent(new CustomEvent('game-reset-complete'));
+        },
+        
 
         get availablePlanets() {
             return this.allPlanets.filter(planet => 
@@ -28,10 +45,14 @@ window.gameLogic = function() {
             );
         },
 
+        calculateTravelTime(planet, vehicle) {
+            if (!planet || !vehicle) return null;
+            return Math.round(planet.distance / vehicle.speed);
+        },
+
         selectPlanet(index, planet, closeModal) {
             // If a different planet is selected, reset the vehicle
             if (this.selections[index].planet !== planet) {
-                // Return the previously selected vehicle's count back if it exists
                 if (this.selections[index].vehicle) {
                     const prevVehicle = this.allVehicles.find(
                         v => v.name === this.selections[index].vehicle.name
@@ -41,21 +62,21 @@ window.gameLogic = function() {
                     }
                 }
                 this.selections[index].vehicle = null;
+                this.selections[index].travelTime = null;
             }
             this.selections[index].planet = planet;
 
-            // Return whether modal should close (when both planet and vehicle are selected)
             return closeModal;
         },
 
         selectVehicle(index, vehicle, closeModal) {
-            // First, check if the planet is selected
+            //check if the planet is selected
             if (!this.selections[index].planet) {
                 alert('Please select a planet first');
                 return false;
             }
 
-            // Check vehicle availability
+            // check vehicle availability
             const availableVehicles = this.availableVehicles(this.selections[index].planet);
             const selectedVehicle = availableVehicles.find(v => v.name === vehicle.name);
 
@@ -64,7 +85,6 @@ window.gameLogic = function() {
                 return false;
             }
 
-            // If a vehicle was previously selected, return its count
             if (this.selections[index].vehicle) {
                 const prevVehicle = this.allVehicles.find(
                     v => v.name === this.selections[index].vehicle.name
@@ -74,12 +94,20 @@ window.gameLogic = function() {
                 }
             }
 
-            // Reduce the count of the newly selected vehicle
             selectedVehicle.total_no--;
             this.selections[index].vehicle = selectedVehicle;
 
-            // Return whether modal should close
+            this.selections[index].travelTime = this.calculateTravelTime(
+                this.selections[index].planet,
+                selectedVehicle
+            );
+
             return closeModal;
+        },
+
+        get totalTravelTime() {
+            return this.selections.reduce((total, selection) => 
+                total + (selection.travelTime || 0), 0);
         },
 
         get selectedPlanetsJson() {

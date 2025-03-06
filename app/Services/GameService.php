@@ -34,6 +34,7 @@ class GameService
     {
         try {
             $response = Http::withHeaders(['Accept' => 'application/json'])
+                ->withoutVerifying()
                 ->post(self::BASE_URL . '/token');
 
             return $response->successful() ? $response->json('token') : null;
@@ -43,7 +44,7 @@ class GameService
         }
     }
 
-    public function findFalcone(array $selectedPlanets, array $selectedVehicles): array
+    public function findFalcone(array $planetNames, array $vehicleNames): array
     {
         $token = $this->getToken();
         
@@ -55,18 +56,28 @@ class GameService
         }
 
         try {
-            $response = Http::post(self::BASE_URL . '/find', [
-                'token' => $token,
-                'planet_names' => array_column($selectedPlanets, 'name'),
-                'vehicle_names' => array_column($selectedVehicles, 'name')
-            ]);
+            $response = Http::withHeaders(['Accept' => 'application/json'])
+                ->withoutVerifying()
+                ->post(self::BASE_URL . '/find', [
+                    'token' => $token,
+                    'planet_names' => $planetNames,
+                    'vehicle_names' => $vehicleNames
+                ]);
+
+            if (!$response->successful()) {
+                Log::error('Find Falcone API error: ' . $response->body());
+                return [
+                    'status' => 'error',
+                    'error' => 'API returned an error: ' . $response->status()
+                ];
+            }
 
             return $response->json();
         } catch (\Exception $e) {
             Log::error('Find Falcone request failed: ' . $e->getMessage());
             return [
                 'status' => 'error', 
-                'message' => 'Failed to complete the Find Falcone request'
+                'error' => 'Failed to complete the Find Falcone request'
             ];
         }
     }

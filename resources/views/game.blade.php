@@ -1,23 +1,4 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Finding Falcone</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-
-    <!-- Styles and Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/game.js'])
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-</head>
-
-<body class="bg-gray-900 text-white">
-    <x-header />
-
+<x-layout>
     <main class="container mx-auto px-4">
         <div class="text-center">
             <h1 class="text-5xl pt-15">
@@ -33,27 +14,34 @@
             <input type="hidden" name="selected_planets" x-model="selectedPlanetsJson">
             <input type="hidden" name="selected_vehicles" x-model="selectedVehiclesJson">
 
+            <div class="text-center mb-6">
+                <div class="inline-block bg-gray-800 rounded-lg px-6 py-3 text-lg">
+                    Total Travel Time: <span class="text-yellow-400 font-bold" x-text="totalTravelTime"></span> hours
+                </div>
+            </div>
+
             <div class="flex justify-evenly">
                 <template x-for="(selection, index) in selections" :key="index">
                     <div class="flex flex-col items-center space-y-3" x-data="{ showModal: false }">
-                        <!-- Planet Selection Button -->
+
                         <button @click="showModal = true" type="button"
-                            class="bg-gray-900 border-blue-700 border-2 hover:border-8 transition duration-300 rounded-full w-40 h-40 flex items-center justify-center">
+                            class="bg-gray-900 border-blue-700 border-2 hover:border-8 transition duration-300 rounded-full w-40 h-40 flex items-center justify-center cursor-pointer">
                             <span x-text="selection.planet?.name || 'SELECT A PLANET'"></span>
                         </button>
 
-                        <!-- Selected Vehicle Display -->
-                        <div x-show="selection.vehicle">
-                            Selected Vehicle: <span x-text="selection.vehicle?.name"></span>
+
+                        <div class="flex flex-col items-center bg-gray-800 p-3 rounded-lg w-48"
+                            x-show="selection.vehicle">
+                            <div>Vehicle: <span class="text-green-400" x-text="selection.vehicle?.name"></span></div>
+                            <div>Time: <span class="text-yellow-400" x-text="selection.travelTime"></span> hours</div>
                         </div>
 
-                        <!-- Modal for Planet & Vehicle Selection -->
                         <div x-show="showModal"
                             class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" x-cloak>
                             <div class="bg-gray-800 p-5 rounded-lg w-1/3">
                                 <h2 class="text-center text-xl font-bold mb-4">Select a Planet & Vehicle</h2>
 
-                                <!-- Planet Selection -->
+
                                 <section>
                                     <h3 class="font-semibold">Planets</h3>
                                     <ul class="mt-2 space-y-2">
@@ -61,12 +49,14 @@
                                             <li class="p-2 bg-gray-700 hover:bg-blue-600 rounded cursor-pointer"
                                                 @click.prevent="selectPlanet(index, planet)">
                                                 <span x-text="planet.name"></span>
+                                                - <span class="text-yellow-300" x-text="planet.distance"></span> million
+                                                km
                                             </li>
                                         </template>
                                     </ul>
                                 </section>
 
-                                <!-- Vehicle Selection -->
+
                                 <section class="mt-4">
                                     <h3 class="font-semibold">Vehicles</h3>
                                     <ul class="mt-2 space-y-2">
@@ -74,15 +64,27 @@
                                             :key="vehicle.name">
                                             <li class="p-2 bg-gray-700 hover:bg-green-600 rounded cursor-pointer"
                                                 @click.prevent="selectVehicle(index, vehicle)">
-                                                <span x-text="vehicle.name"></span>
-                                                (Available: <span x-text="vehicle.total_no"></span>)
+                                                <div class="flex justify-between">
+                                                    <span>
+                                                        <span x-text="vehicle.name"></span>
+                                                        (Available: <span x-text="vehicle.total_no"></span>)
+                                                    </span>
+                                                    <span class="text-yellow-300">
+                                                        Speed: <span x-text="vehicle.speed"></span> megamiles/hr
+                                                    </span>
+                                                </div>
+                                                <div x-show="selection.planet" class="text-xs text-gray-300 mt-1">
+                                                    Travel time: <span
+                                                        x-text="calculateTravelTime(selection.planet, vehicle)"></span>
+                                                    hours
+                                                </div>
                                             </li>
                                         </template>
                                     </ul>
                                 </section>
-                                <div class="flex justify-center">
+                                <div class="flex justify-center mt-4">
                                     <button @click="showModal = false" type="button"
-                                        class="bg-white border-2  text-black  px-3 py-3  font-bold rounded-lg hover:text-white hover:bg-blue-600 transition duration-300 flex items-center justify-center">
+                                        class="bg-white border-2 cursor-pointer text-black px-3 py-3 font-bold rounded-lg hover:text-white hover:bg-blue-600 transition duration-300 flex items-center justify-center">
                                         <span>Done </span>
                                     </button>
                                 </div>
@@ -92,7 +94,6 @@
                 </template>
             </div>
 
-            <!-- Find Falcone Button -->
             <div class="flex justify-center mt-6">
                 <button type="submit"
                     class="bg-white text-black px-10 py-2 font-extrabold rounded hover:bg-gray-200 transition"
@@ -102,10 +103,11 @@
             </div>
         </form>
     </main>
-</body>
-<script>
-    window.gameData = {
-        planets: @json($planets),
-        vehicles: @json($vehicles)
-    };
-</script>
+
+    <script>
+        window.gameData = {
+            planets: @json($planets),
+            vehicles: @json($vehicles)
+        };
+    </script>
+</x-layout>

@@ -29,22 +29,50 @@ class GameController extends Controller
     public function findFalcone(Request $request)
     {
         try {
-            $this->validateGameSelections($request);
-
+            // Decode and validate the selections
             $selectedPlanets = json_decode($request->input('selected_planets'), true);
             $selectedVehicles = json_decode($request->input('selected_vehicles'), true);
+            
+            $this->validateGameSelections($selectedPlanets, $selectedVehicles);
+            
+            // Format planet and vehicle names for API request
+            $planetNames = array_map(function($planet) {
+                return $planet['name'];
+            }, $selectedPlanets);
+            
+            $vehicleNames = array_map(function($vehicle) {
+                return $vehicle['name'];
+            }, $selectedVehicles);
     
-            $result = $this->gameService->findFalcone($selectedPlanets, $selectedVehicles);
+            // Call service to find Falcone
+            $result = $this->gameService->findFalcone($planetNames, $vehicleNames);
+            
+            // Calculate total time taken
+            $timeTaken = $this->calculateTimeTaken($selectedPlanets, $selectedVehicles);
+            
+            // Create selections array for display
+            $selections = [];
+            for ($i = 0; $i < count($planetNames); $i++) {
+                $selections[] = [
+                    'planet' => $planetNames[$i],
+                    'vehicle' => $vehicleNames[$i]
+                ];
+            }
     
-            return view('result', compact('result'));
+            return view('result', compact('result', 'timeTaken', 'selections'));
         } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors('An error occurred: ' . $e->getMessage());
         }
     }
-    private function validateGameSelections(Request $request)
+    private function validateGameSelections($selectedPlanets, $selectedVehicles)
     {
-        $selectedPlanets = json_decode($request->input('selected_planets'), true);
-        $selectedVehicles = json_decode($request->input('selected_vehicles'), true);
+        if (!is_array($selectedPlanets) || !is_array($selectedVehicles)) {
+            throw ValidationException::withMessages([
+                'selections' => 'Invalid selection format.'
+            ]);
+        }
 
         if (count($selectedPlanets) !== 4 || count($selectedVehicles) !== 4) {
             throw ValidationException::withMessages([
@@ -52,7 +80,35 @@ class GameController extends Controller
             ]);
         }
 
-        // Add more validation as needed
+        // Check for null values in selections
+        foreach ($selectedPlanets as $planet) {
+            if ($planet === null) {
+                throw ValidationException::withMessages([
+                    'selections' => 'All planets must be selected.'
+                ]);
+            }
+        }
+
+        foreach ($selectedVehicles as $vehicle) {
+            if ($vehicle === null) {
+                throw ValidationException::withMessages([
+                    'selections' => 'All vehicles must be selected.'
+                ]);
+            }
+        }
+    }
+    
+    private function calculateTimeTaken($planets, $vehicles)
+    {
+        $totalTime = 0;
+        
+        for ($i = 0; $i < count($planets); $i++) {
+            $distance = $planets[$i]['distance'];
+            $speed = $vehicles[$i]['speed'];
+            $totalTime += $distance / $speed;
+        }
+        
+        return $totalTime;
     }
 
 
