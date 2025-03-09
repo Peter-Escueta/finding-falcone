@@ -29,35 +29,24 @@ class GameController extends Controller
     public function findFalcone(Request $request)
     {
         try {
-            // Decode and validate the selections
-            $selectedPlanets = json_decode($request->input('selected_planets'), true);
-            $selectedVehicles = json_decode($request->input('selected_vehicles'), true);
+                 // Decode JSON input with fallback to empty arrays for protection against null values
+            $selectedPlanets = json_decode($request->input('selected_planets', '[]'), true);
+            $selectedVehicles = json_decode($request->input('selected_vehicles', '[]'), true);
             
             $this->validateGameSelections($selectedPlanets, $selectedVehicles);
             
-            // Format planet and vehicle names for API request
-            $planetNames = array_map(function($planet) {
-                return $planet['name'];
-            }, $selectedPlanets);
-            
-            $vehicleNames = array_map(function($vehicle) {
-                return $vehicle['name'];
-            }, $selectedVehicles);
+              // Extract just the names for the external API which only accepts name strings
+            $planetNames = array_column($selectedPlanets, 'name');
+            $vehicleNames = array_column($selectedVehicles, 'name');
     
-            // Call service to find Falcone
             $result = $this->gameService->findFalcone($planetNames, $vehicleNames);
-            
-            // Calculate total time taken
             $timeTaken = $this->calculateTimeTaken($selectedPlanets, $selectedVehicles);
             
-            // Create selections array for display
-            $selections = [];
-            for ($i = 0; $i < count($planetNames); $i++) {
-                $selections[] = [
-                    'planet' => $planetNames[$i],
-                    'vehicle' => $vehicleNames[$i]
-                ];
-            }
+            // Convert arrays into single structured arrays for the view
+            $selections = array_map(fn($planet, $vehicle) => [
+                'planet' => $planet,
+                'vehicle' => $vehicle
+            ], $planetNames, $vehicleNames);
     
             return view('result', compact('result', 'timeTaken', 'selections'));
         } catch (ValidationException $e) {
