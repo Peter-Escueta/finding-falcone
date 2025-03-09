@@ -2,9 +2,9 @@
 
 ## Installation
 
-This guide assumes that you already have 'npm' and 'composer' and 'php'
+This guide assumes that you already have `npm` and `composer` and `php`
 
--   Clone this repository using 'git clone https://github.com/Peter-Escueta/finding-falcone.git'
+-   Clone this repository using `git clone https://github.com/Peter-Escueta/finding-falcone.git`
 
 -   Navigate to the file directory using `cd finding-falcone`
 
