@@ -1,5 +1,5 @@
 <x-layout>
-    <main class="container mx-auto px-4">
+    <main class="container mx-auto px-4 flex-1">
         <div class="text-center">
             <h1 class="text-5xl pt-15">
                 Finding <span class="text-blue-700 font-bold">Falcone</span>
@@ -96,13 +96,19 @@
 
             <div class="flex justify-center mt-6">
                 <button type="submit"
-                    class="bg-white text-black px-10 py-2 font-extrabold rounded hover:bg-gray-200 transition"
+                    class="bg-white text-black px-10 py-2 font-extrabold rounded hover:bg-gray-200 transition cursor-pointer"
                     :disabled="!isSubmittable">
                     Find Falcone
                 </button>
             </div>
         </form>
+
+
+
     </main>
+    <footer class="bg-gray-1000 text-white text-center rounded-lg shadow-sm m-4 dark:bg-gray-800">
+        <p> Finding Falcone | Status: <span class="text-blue-600"> Active </span> </p>
+    </footer>
 
     <script>
         window.gameData = {
@@ -110,4 +116,5 @@
             vehicles: @json($vehicles)
         };
     </script>
+
 </x-layout>

@@ -20,15 +20,10 @@ window.gameLogic = function() {
             });
         },
 
-        resetGame() {
-
-            console.log('Resetting game state');
-        
+        resetGame() {        
             this.selections = this.selections.map(() => ({ planet: null, vehicle: null, travelTime: null }));
-        
             this.allVehicles = JSON.parse(JSON.stringify(window.gameData.vehicles || []));
         
-            window.dispatchEvent(new CustomEvent('game-reset-complete'));
         },
         
 
@@ -51,7 +46,6 @@ window.gameLogic = function() {
         },
 
         selectPlanet(index, planet, closeModal) {
-            // If a different planet is selected, reset the vehicle
             if (this.selections[index].planet !== planet) {
                 if (this.selections[index].vehicle) {
                     const prevVehicle = this.allVehicles.find(
@@ -70,13 +64,11 @@ window.gameLogic = function() {
         },
 
         selectVehicle(index, vehicle, closeModal) {
-            //check if the planet is selected
             if (!this.selections[index].planet) {
                 alert('Please select a planet first');
                 return false;
             }
 
-            // check vehicle availability
             const availableVehicles = this.availableVehicles(this.selections[index].planet);
             const selectedVehicle = availableVehicles.find(v => v.name === vehicle.name);
 

@@ -18,7 +18,7 @@
     {{ $scripts ?? '' }}
 </head>
 
-<body class="bg-gray-900 text-white">
+<body class="bg-gray-900 text-white flex flex-col min-h-screen">
     <x-header />
     {{ $slot }}
 
