@@ -11,7 +11,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
     <!-- Styles and Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js,', 'resources/js/game.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/game.js'])
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
     {{ $styles ?? '' }}
@@ -22,7 +22,7 @@
     <x-header />
     {{ $slot }}
 
-    {{ $footer ?? '' }}
+    <x-footer />
 </body>
 
 </html>

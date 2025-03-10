@@ -94,7 +94,7 @@
                 </template>
             </div>
 
-            <div class="flex justify-center mt-6">
+            <div class="flex justify-center mt-20">
                 <button type="submit"
                     class="bg-white text-black px-10 py-2 font-extrabold rounded hover:bg-gray-200 transition cursor-pointer"
                     :disabled="!isSubmittable">
@@ -106,9 +106,6 @@
 
 
     </main>
-    <footer class="bg-gray-1000 text-white text-center rounded-lg shadow-sm m-4 dark:bg-gray-800">
-        <p> Finding Falcone | Status: <span class="text-blue-600"> Active </span> </p>
-    </footer>
 
     <script>
         window.gameData = {
