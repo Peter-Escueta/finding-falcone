@@ -24,6 +24,15 @@ class GameController extends Controller
             'vehicles'=> $this->gameService->getVehicles()
         ]);
     }
+    public function instructions()
+    {
+        return view('instruction');
+    }
+    
+    public function story()
+    {
+        return view('story');
+    }
     
     //Function for after submitting the post request 
     public function findFalcone(Request $request)
